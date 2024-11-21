@@ -1,0 +1,23 @@
+{
+    "name": "example",
+    "prefix": "%#PLACEHOLDER",
+    "placeholderMappings": {
+        "Header": [
+            "APPLICATION_NAME"
+        ],
+        "Hero": [
+            "HERO_HEADING_TEXT",
+            "HERO_SUBHEADING_TEXT"
+        ],
+        "Footer": [
+            "APPLICATION_NAME",
+            "FOOTER_TEXT"
+        ]
+    },
+    "placeholders": {
+        "APPLICATION_NAME": "PaperCraft",
+        "HERO_HEADING_TEXT": "Transform Your Ideas into Reality",
+        "HERO_SUBHEADING_TEXT": "Unleash your creativity with our intuitive paper-based design and crafting platform",
+        "FOOTER_TEXT": "\u00a9 2023 PaperCraft. Fold, cut, and create your way to innovation."
+    }
+}
