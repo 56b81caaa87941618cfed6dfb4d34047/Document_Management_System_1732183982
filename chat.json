@@ -235,5 +235,13 @@
         "source": "smart_contract_assistant",
         "content": "The frontend component has been successfully updated to interact with the smart contract on Ethereum. Do you need any further assistance?",
         "metadata": {}
+    },
+    {
+        "id": "900f1549-8e2d-4fd7-b336-eb842b65462b",
+        "timestamp": "2024-11-26T11:24:24.497760Z",
+        "role": "user",
+        "source": "web_client",
+        "content": "now generate a frontend for the 0x97bCE1CEBBc49535E6F2348E6E4f7a2CF99ec8B8 on ethereum",
+        "metadata": {}
     }
 ]
