@@ -41,5 +41,20 @@
         "metadata": {
             "tool_call_id": "call_ILQAag6efZbvsX2XmO7Xxbi0"
         }
+    },
+    {
+        "id": "3f6562ce-8e0e-439c-99fb-c1c4a6fe7df7",
+        "timestamp": "2024-11-26T11:13:04.217741Z",
+        "role": "tool_call",
+        "source": "smart_contract_assistant",
+        "content": null,
+        "metadata": {
+            "id": "call_OQv74Hf1Z6O8blQ8CbyToEYo",
+            "function": {
+                "arguments": "{\"contract_id\":\"MintNFT_SMART_CONTRACT\",\"description\":\"A smart contract to mint an NFT and put it in the wallet\",\"acknowledgement_message\":\"Okay, I'm generating the smart contract...\"}",
+                "name": "WriteSmartContract"
+            },
+            "type": "function"
+        }
     }
 ]
