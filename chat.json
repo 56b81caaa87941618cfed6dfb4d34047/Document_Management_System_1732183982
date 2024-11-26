@@ -166,5 +166,15 @@
         "source": "smart_contract_assistant",
         "content": "The smart contract has been successfully deployed and the frontend component updated to interact with it. Would you like any further adjustments?",
         "metadata": {}
+    },
+    {
+        "id": "98551f81-0f43-4f24-a88a-dd1abda84489",
+        "timestamp": "2024-11-26T11:15:40.291860Z",
+        "role": "user",
+        "source": "web_client",
+        "content": "now generate a frontend for it",
+        "metadata": {
+            "component_id": "Hero1732183986"
+        }
     }
 ]
