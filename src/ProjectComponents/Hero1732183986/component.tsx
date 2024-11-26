@@ -1,67 +1,32 @@
 
-import React, { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
+import React from 'react';
+import * as Ethers from 'ethers';
 
 const NFTMinter: React.FC = () => {
-  const [walletAddress, setWalletAddress] = useState<string>('');
-  const [recipientAddress, setRecipientAddress] = useState<string>('');
-  const [baseURI, setBaseURI] = useState<string>('');
-  const [mintingStatus, setMintingStatus] = useState<string>('');
-  const [error, setError] = useState<string>('');
-  const [tokenId, setTokenId] = useState<string>('');
+  const [walletAddress, setWalletAddress] = React.useState<string>('');
+  const [recipientAddress, setRecipientAddress] = React.useState<string>('');
+  const [baseURI, setBaseURI] = React.useState<string>('');
+  const [currentBaseURI, setCurrentBaseURI] = React.useState<string>('');
+  const [status, setStatus] = React.useState<string>('');
+  const [error, setError] = React.useState<string>('');
 
   const contractAddress = '0x97bCE1CEBBc49535E6F2348E6E4f7a2CF99ec8B8';
   const chainId = 1; // Ethereum mainnet
 
   const contractABI = [
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        }
-      ],
-      "name": "mintNFT",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "baseURI",
-          "type": "string"
-        }
-      ],
-      "name": "setBaseURI",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    }
+    {"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"mintNFT","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"string","name":"baseURI","type":"string"}],"name":"setBaseURI","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"_baseURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}
   ];
 
-  useEffect(() => {
+  React.useEffect(() => {
     checkWalletConnection();
   }, []);
 
   const checkWalletConnection = async () => {
     if (typeof window.ethereum !== 'undefined') {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const provider = new Ethers.providers.Web3Provider(window.ethereum);
       const accounts = await provider.listAccounts();
       if (accounts.length > 0) {
         setWalletAddress(accounts[0]);
@@ -73,7 +38,7 @@ const NFTMinter: React.FC = () => {
   const connectWallet = async () => {
     try {
       if (typeof window.ethereum !== 'undefined') {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const provider = new Ethers.providers.Web3Provider(window.ethereum);
         await provider.send("eth_requestAccounts", []);
         const signer = provider.getSigner();
         const address = await signer.getAddress();
@@ -87,13 +52,13 @@ const NFTMinter: React.FC = () => {
     }
   };
 
-  const checkNetwork = async (provider: ethers.providers.Web3Provider) => {
+  const checkNetwork = async (provider: Ethers.providers.Web3Provider) => {
     const network = await provider.getNetwork();
     if (network.chainId !== chainId) {
       try {
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: ethers.utils.hexValue(chainId) }],
+          params: [{ chainId: Ethers.utils.hexValue(chainId) }],
         });
       } catch (switchError) {
         setError('Please switch to the Ethereum mainnet in your wallet.');
@@ -101,68 +66,70 @@ const NFTMinter: React.FC = () => {
     }
   };
 
+  const getContract = async () => {
+    if (typeof window.ethereum !== 'undefined') {
+      const provider = new Ethers.providers.Web3Provider(window.ethereum);
+      await checkNetwork(provider);
+      const signer = provider.getSigner();
+      return new Ethers.Contract(contractAddress, contractABI, signer);
+    }
+    throw new Error('Please install MetaMask!');
+  };
+
   const mintNFT = async () => {
-    if (!ethers.utils.isAddress(recipientAddress)) {
+    if (!Ethers.utils.isAddress(recipientAddress)) {
       setError('Invalid recipient address.');
       return;
     }
 
     try {
-      if (typeof window.ethereum !== 'undefined') {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const contract = new ethers.Contract(contractAddress, contractABI, signer);
-
-        setMintingStatus('Minting...');
-        const tx = await contract.mintNFT(recipientAddress);
-        const receipt = await tx.wait();
-        const event = receipt.events?.find(e => e.event === 'NFTMinted');
-        if (event && event.args) {
-          setTokenId(event.args.tokenId.toString());
-        }
-        setMintingStatus('NFT minted successfully!');
-      } else {
-        setError('Please install MetaMask!');
-      }
+      const contract = await getContract();
+      setStatus('Minting...');
+      const tx = await contract.mintNFT(recipientAddress);
+      await tx.wait();
+      setStatus('NFT minted successfully!');
     } catch (err: any) {
-      if (err.code === 'ACTION_REJECTED') {
-        setError('Transaction was rejected by the user.');
-      } else if (err.message.includes("execution reverted")) {
-        setError('Minting failed. Make sure you are the contract owner.');
-      } else {
-        setError('Failed to mint NFT. Please try again.');
-      }
-      setMintingStatus('');
+      handleError(err, 'Failed to mint NFT. Make sure you are the contract owner.');
     }
   };
 
   const setNewBaseURI = async () => {
     try {
-      if (typeof window.ethereum !== 'undefined') {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const contract = new ethers.Contract(contractAddress, contractABI, signer);
-
-        const tx = await contract.setBaseURI(baseURI);
-        await tx.wait();
-        setMintingStatus('Base URI set successfully!');
-      } else {
-        setError('Please install MetaMask!');
-      }
+      const contract = await getContract();
+      setStatus('Setting new Base URI...');
+      const tx = await contract.setBaseURI(baseURI);
+      await tx.wait();
+      setStatus('Base URI set successfully!');
     } catch (err: any) {
-      if (err.code === 'ACTION_REJECTED') {
-        setError('Transaction was rejected by the user.');
-      } else if (err.message.includes("execution reverted")) {
-        setError('Failed to set Base URI. Make sure you are the contract owner.');
-      } else {
-        setError('Failed to set Base URI. Please try again.');
-      }
+      handleError(err, 'Failed to set Base URI. Make sure you are the contract owner.');
     }
   };
 
+  const fetchCurrentBaseURI = async () => {
+    try {
+      const contract = await getContract();
+      const uri = await contract._baseURI();
+      setCurrentBaseURI(uri);
+      setStatus('Base URI fetched successfully!');
+    } catch (err: any) {
+      handleError(err, 'Failed to fetch current Base URI.');
+    }
+  };
+
+  const handleError = (err: any, defaultMessage: string) => {
+    if (err.code === 'ACTION_REJECTED') {
+      setError('Transaction was rejected by the user.');
+    } else if (err.message.includes("execution reverted")) {
+      setError(defaultMessage);
+    } else {
+      setError(`${defaultMessage} Please try again.`);
+    }
+    setStatus('');
+  };
+
   return (
-    <div className="bg-gray-900 py-16 text-white w-full min-h-screen">
-      <div className="container mx-auto px-4 flex flex-col items-center">
+    <div className="bg-gray-900 p-5 text-white min-h-screen">
+      <div className="container mx-auto flex flex-col items-center">
         <h1 className="text-4xl font-bold mb-8">NFT Minter on Ethereum</h1>
         
         {!walletAddress ? (
@@ -204,18 +171,26 @@ const NFTMinter: React.FC = () => {
           <button
             onClick={setNewBaseURI}
             disabled={!walletAddress}
-            className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg w-full"
+            className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg w-full mb-4"
           >
             Set Base URI
           </button>
+
+          <button
+            onClick={fetchCurrentBaseURI}
+            disabled={!walletAddress}
+            className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg w-full"
+          >
+            Fetch Current Base URI
+          </button>
         </div>
 
-        {mintingStatus && (
-          <p className="mt-4 text-green-500">{mintingStatus}</p>
+        {status && (
+          <p className="mt-4 text-green-500">{status}</p>
         )}
 
-        {tokenId && (
-          <p className="mt-4 text-yellow-500">Minted Token ID: {tokenId}</p>
+        {currentBaseURI && (
+          <p className="mt-4 text-yellow-500">Current Base URI: {currentBaseURI}</p>
         )}
 
         {error && (
