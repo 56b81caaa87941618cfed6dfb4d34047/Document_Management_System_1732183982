@@ -11,7 +11,7 @@ const NFTMinter: React.FC = () => {
   const [error, setError] = React.useState<string>('');
 
   const contractAddress = '0x97bCE1CEBBc49535E6F2348E6E4f7a2CF99ec8B8';
-  const chainId = 1; // Ethereum mainnet
+  const chainId = 17000; // Ethereum mainnet
 
   const contractABI = [
     {"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"mintNFT","outputs":[],"stateMutability":"nonpayable","type":"function"},
